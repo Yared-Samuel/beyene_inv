@@ -167,6 +167,7 @@ const getAllDelivery = asyncHandler(async (req, res) => {
     .populate("product", "name");
   res.status(201).json(allDelivery);
 });
+// Get Delivery for Specific store
 const getStoreDelivery = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const storeDelivery = await Store.find({
@@ -176,6 +177,7 @@ const getStoreDelivery = asyncHandler(async (req, res) => {
     .populate("product", "name");
   res.status(201).json(storeDelivery);
 });
+
 
 const sale = asyncHandler(async (req, res) => {
   const { quantity } = req.body;

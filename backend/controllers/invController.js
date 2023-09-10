@@ -5,12 +5,11 @@ const Inventory = require("../models/inventoryModel");
 const Store = require("../models/storeModel");
 
 const purchase = asyncHandler(async (req, res) => {
-  const { product, quatity, unit_price, tin } = req.body;
+  const { product, quatity, unit_price, tin, date } = req.body;
 
   const type = "pp";
   const user = req.user.id;
-  const currentDate = new Date();
-  const date = currentDate;
+  
 
   if (!type || !product || !quatity || !date || !user || !unit_price) {
     res.status(400);
@@ -33,7 +32,9 @@ const purchase = asyncHandler(async (req, res) => {
 });
 // Get all purchase
 const getAllPurchase = asyncHandler(async (req, res) => {
-  const getPurchase = await Inventory.find({ type: "pp" }).sort("-createdAt");
+  const getPurchase = await Inventory.find({ type: "pp" })
+                                      .populate("product", "name")
+                                      .sort("-createdAt");
   res.send(getPurchase);
 });
 // Get purchase with TIN
@@ -188,6 +189,7 @@ const sale = asyncHandler(async (req, res) => {
   const product_id = req.product_id;
   const product_price = req.product_selling_price;
   const to_store = req.to_store;
+  // const quantity = req.quantity
 
   // validation
   if (!type || !date || !product_id || !product_price || !to_store) {
@@ -241,12 +243,19 @@ const sale = asyncHandler(async (req, res) => {
       res.status(400);
       throw new Error("Please check your balance");
     }
-    const toatal_sell_price = quantity * product_price;
+
+    if(sub_measurment_value){
+      const prod = Product.findOne(product_id)
+      const value = prod.sub_measurment_value
+      return value || 1
+    }
+
+    const toatal_sell_price = quantity / value * product_price / value;
 
     const createSalesInv = await Inventory.create({
       type,
       product: product_id,
-      quatity: quantity,
+      quatity: quantity / value,
       unit_price: product_price,
       total_price: toatal_sell_price,
       to_store,
@@ -256,7 +265,7 @@ const sale = asyncHandler(async (req, res) => {
     const createSalesStore = await Store.create({
       type,
       product: product_id,
-      quatity: quantity,
+      quatity: quantity / value,
       unit_price: product_price,
       total_price: toatal_sell_price,
       to_store,

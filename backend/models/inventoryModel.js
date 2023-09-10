@@ -54,6 +54,7 @@ const inventorySchema = mongoose.Schema({
         // validate: tinValidator,
         default: null
     },
+    
     date: {
         type: Date,
         required: [true, "Date is required"]

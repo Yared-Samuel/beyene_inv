@@ -35,7 +35,7 @@ const productSchema = mongoose.Schema({
     sub_measurment_value: {
         type: Number,
         trim: true,
-        default: 0,
+        default: 1,
     },
     min_stock: {
         type: Number,

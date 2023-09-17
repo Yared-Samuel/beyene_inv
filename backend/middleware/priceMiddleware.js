@@ -13,7 +13,7 @@ const find_price = asyncHandler(async (req, res, next) => {
     }
     const storePrice = await storeList.findOne({_id: to_store})
                                       .populate('sPrice', 'name')
-                                      console.log(storePrice)                           
+                                    //   console.log(storePrice)                           
     if(storePrice.length == 0){
         res.status(400);
         throw new Error("Price not found in Store model");
@@ -21,15 +21,21 @@ const find_price = asyncHandler(async (req, res, next) => {
      
     // Selling price ID
     const price_id = storePrice.sPrice._id
+    
     // get selling price data assigned to store
     const price = await priceList.findOne(price_id)
     const products = price.products
     // filter product and price
     const filterProducts = products.filter(product => product.product == product_id);
+    if(filterProducts.length === 0) {
+        res.status(404);
+        throw new Error("Please Configure price for the product selected!");
+    }
     // const sellingPrice = filterProducts.length > 0 ? filteredProducts[0].sellingPrice : null;
     const sellingPrice = filterProducts[0].sellingPrice;
     const product_in_price = filterProducts[0].product
-
+    // console.log(sellingPrice)
+    // console.log(product_in_price)
     
         req.product_id = product_in_price
         req.product_selling_price = sellingPrice

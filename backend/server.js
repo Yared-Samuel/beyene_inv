@@ -11,6 +11,7 @@ const categoryRoute = require('./routes/categoryRoute')
 const storeListRoute = require('./routes/storelistRoute')
 const invRoute = require("./routes/invRoute")
 const priceRoute = require("./routes/priceRoute")
+const serveRoute = require("./routes/serveListRoute")
 
 const app = express();
 
@@ -33,6 +34,7 @@ app.use("/api/category", categoryRoute)
 app.use("/api/storelist", storeListRoute)
 app.use("/api/inv", invRoute)
 app.use("/api/price", priceRoute)
+app.use("/api/serve", serveRoute)
 
 // Routes
 app.get("/", (req, res) => {

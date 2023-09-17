@@ -20,7 +20,8 @@ const createSprice = asyncHandler(async(req, res)=>{
 })
 
 const getSprice = asyncHandler(async(req, res)=>{
-    const sPrice = await Sprice.find()
+    const sPrice = await Sprice.find().populate('products.product', "name")
+    
     res.status(200).json(sPrice)
 })
 

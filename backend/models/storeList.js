@@ -9,6 +9,12 @@ const storeListSchema = mongoose.Schema({
         required: true,
         ref: StoreCat
     },
+    processing: {
+        type: String,
+        enum: ['finished', 'raw', 'fixed', 'use-and-throw', "others"],
+        required: [true, "Configure Processing method"],
+        
+    },
     sPrice: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "Please configure price"],

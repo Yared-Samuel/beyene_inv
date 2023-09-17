@@ -23,6 +23,11 @@ const productSchema = mongoose.Schema({
         required: [true,"Please add a category"],
         ref: Category
     },
+    type: {
+        type: String,
+        enum: ['finished', 'raw', 'fixed', 'use-and-throw', "others"],
+        required: [true,"Please assign type"],
+    },
     measurment: {
         type: String,
         required: true,
@@ -39,7 +44,8 @@ const productSchema = mongoose.Schema({
     },
     min_stock: {
         type: Number,
-        trim: true
+        trim: true,
+        default: 1
     },
     description: {
         type: String,

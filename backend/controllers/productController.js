@@ -2,29 +2,27 @@ const asyncHandler = require("express-async-handler");
 const Product = require("../models/productModel");
 
 const createProduct = asyncHandler(async (req, res) => {
-  const { code, name, category, measurment, min_stock, description,sub_measurment,sub_measurment_value, type } = req.body;
+  console.log(req.body)
+  const { name, category, measurment,  description,sub_measurment,sub_measurment_value, type } = req.body;
   const user = req.user.id; // because of protected route
   // validation
-  if (!code || !name || !user || !category || !measurment || !type) {
+  if (!name || !user || !category || !measurment || !type) {
     res.status(400);
     throw new Error("Please fill product details correctly!");
   }
-  const codeCheck = await Product.findOne({code})
   const nameCheck = await Product.findOne({name})
   
-  if(codeCheck || nameCheck) {
+  if(nameCheck) {
     res.status(400)
     throw new Error("Product name or Code already exist!")
   }
 
   const product = await Product.create({
-    code,
     name,
     category,
     measurment,
     sub_measurment,
     sub_measurment_value,
-    min_stock,
     description,
     type,
     user,

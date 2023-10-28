@@ -102,8 +102,9 @@ const registerUser = asyncHandler(async (req, res) => {
             sameSite: "none",
             secure: true
         });
-
+        // res.json({ token: token });
         if(user && passwordIsCorrect) {
+          
             const { _id, name, email } = user;
             res.status(200).json({
             _id,

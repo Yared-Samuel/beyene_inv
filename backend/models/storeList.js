@@ -4,16 +4,11 @@ const StoreCat = require("./storeListCatModel");
 const SPrice = require("./sellingPriceModel")
 
 const storeListSchema = mongoose.Schema({
-    category: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: StoreCat
-    },
+    
     processing: {
         type: String,
         enum: ['finished', 'raw', 'fixed', 'use-and-throw', "others"],
-        required: [true, "Configure Processing method"],
-        
+        required: [true, "Configure Processing method"],       
     },
     sPrice: {
         type: mongoose.Schema.Types.ObjectId,

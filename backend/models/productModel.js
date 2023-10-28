@@ -4,11 +4,7 @@ const Category = require("./productCategoryModel");
 
 
 const productSchema = mongoose.Schema({
-    code: {
-        type: Number,
-        required: [true, "Product identification code is required!"],
-        trim: true
-    },
+  
     name: {
         type: String,
         required: [true, "Please add product name"]
@@ -42,11 +38,7 @@ const productSchema = mongoose.Schema({
         trim: true,
         default: 1,
     },
-    min_stock: {
-        type: Number,
-        trim: true,
-        default: 1
-    },
+    
     description: {
         type: String,
         maxLength: [100, "description must not be greater than 20 characters"],

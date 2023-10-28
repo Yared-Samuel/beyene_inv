@@ -12,6 +12,8 @@ const storeListRoute = require('./routes/storelistRoute')
 const invRoute = require("./routes/invRoute")
 const priceRoute = require("./routes/priceRoute")
 const serveRoute = require("./routes/serveListRoute")
+const reportRoute = require("./routes/reportRoute");
+const analyzeRoute = require("./routes/analyzeRoute")
 
 const app = express();
 
@@ -22,7 +24,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors({
-  origin: ["http://localhost:3000", "https://inv-app-beyene"],
+  origin: ["http://localhost:3000","http://192.168.50.167:8081" ,"https://inv-app-beyene"],
   credentials: true
 }));
 
@@ -35,6 +37,8 @@ app.use("/api/storelist", storeListRoute)
 app.use("/api/inv", invRoute)
 app.use("/api/price", priceRoute)
 app.use("/api/serve", serveRoute)
+app.use("/api/report", reportRoute)
+app.use("/api/analyze", analyzeRoute)
 
 // Routes
 app.get("/", (req, res) => {

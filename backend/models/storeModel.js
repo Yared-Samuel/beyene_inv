@@ -2,19 +2,27 @@ const mongoose = require("mongoose");
 const StoreList = require("./storeList");
 const Product = require("./productModel");
 const User = require("./userModel");
+const Serve = require("./serveListModel");
 
 
 const storeSchema = mongoose.Schema({
     type: {
         type: String,
-        enum: ['pd', 'ps'],
-        // pd-product distribute ps-product sale
+        enum: ['pd', 'ps', 'pu','pps'],
+        // pd-product distribute ps-product sale pu-product consumed pps-product processed soled
         required: [true, "Trasnaction type is required"],
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Product is required"],
-        ref: Product
+        // required: [true, "Product is required"],
+        ref: Product,
+        default: null
+    },
+    serve: {
+        type: mongoose.Schema.Types.ObjectId,
+        // required: [true, "Service is required"],
+        ref: Serve,
+        default: null
     },
     
     quatity: {
@@ -37,6 +45,10 @@ const storeSchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: StoreList,
         default: null
+    },
+    measured_by: {
+        type: String,
+        // ref: Product
     },
     date: {
         type: Date,

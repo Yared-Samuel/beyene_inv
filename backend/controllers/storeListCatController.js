@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler')
 const StoreCat = require('../models/storeListCatModel');
 const StoreList = require('../models/storeList');
-
+const MainStore = require('../models/mainStore')
 const createStoreCategory = asyncHandler(async(req, res)=>{
     const {name , description} = req.body;
     const user_creater = req.user.id;
@@ -34,11 +34,17 @@ const getStoreCategory = asyncHandler(async(req, res) =>{
 
 
 const createStore = asyncHandler(async(req, res)=>{
-    const {name, operator, description, category, sPrice , processing} = req.body;
+    const {name, operator, description, sPrice , processing} = req.body;
+    console.log(req.body)
     const user_creater = req.user.id;
-    if(!name || !category || !sPrice || !processing ) {
+    if(!name ||  !processing || !sPrice) {
         res.status(400)
-        throw new Error("Category name and Category is required!")
+        throw new Error("Some fildes are required!")
+    }
+
+    if(processing == "finished" && !sPrice){
+        res.status(400)
+        throw new Error("For finished stores selling price is required")
     }
     const nameCheck = await StoreCat.findOne({name})
     if(nameCheck) {
@@ -46,22 +52,21 @@ const createStore = asyncHandler(async(req, res)=>{
         throw new Error("Product name already exist!")
     }
 
-    const categories = await StoreList.create({
+    const stores = await StoreList.create({
         name,
         description,
         operator,
-        category,
         sPrice,
         processing,
         user : user_creater
     });
-    res.status(201).json(categories)
+    
+    res.status(201).json(stores)
 
 })
 
 const getStores = asyncHandler(async(req, res) =>{
     const storeLists = await StoreList.find({})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)
     
                             
@@ -73,7 +78,6 @@ const getStores = asyncHandler(async(req, res) =>{
 const storeFinished = asyncHandler(async(req, res) =>{
     
     const storeFinishedLists = await StoreList.find({processing: "finished"})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)
 
                             
@@ -83,7 +87,6 @@ const storeRaw = asyncHandler(async(req, res) =>{
     
     
     const storeRawLists = await StoreList.find({processing: "raw"})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)                            
     res.status(200).json(storeRawLists)
 })
@@ -91,7 +94,6 @@ const storeFixed = asyncHandler(async(req, res) =>{
     
     
     const storeFixedLists = await StoreList.find({processing: "fixed"})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)
     
                             
@@ -100,17 +102,52 @@ const storeFixed = asyncHandler(async(req, res) =>{
 
 const storeUseAndThrow = asyncHandler(async(req, res) =>{
     const storeUseAndThrowLists = await StoreList.find({processing: "use-and-throw"})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)
     
     res.status(200).json(storeUseAndThrowLists)
 })
 const storeOthers = asyncHandler(async(req, res) =>{
     const storeOthersLists = await StoreList.find({processing: "others"})
-                            .populate('category', 'name')
                             .populate('sPrice', 'name',)
                             
     res.status(200).json(storeOthersLists)
+})
+
+// main store
+
+const createMainStore = asyncHandler(async(req, res)=>{
+    const {name, operator, description } = req.body;
+
+    const user_creater = req.user.id;
+    if(!name ) {
+        res.status(400)
+        throw new Error("Category name is required!")
+    }
+
+    
+    const nameCheck = await StoreCat.findOne({name})
+    console.log(nameCheck)
+    if(nameCheck) {
+        res.status(400)
+        throw new Error("Store name already exist!")
+    }
+
+    const stores = await MainStore.create({
+        name,
+        description,
+        operator,
+        user : user_creater
+    });
+    
+    res.status(201).json(stores)
+
+})
+
+const getMainStore = asyncHandler(async(req, res) =>{
+    const mainStoreList = await MainStore.find()
+                            
+                            
+    res.status(200).json(mainStoreList)
 })
 
 
@@ -124,5 +161,7 @@ module.exports ={
      storeRaw,
      storeFixed,
      storeUseAndThrow,
-     storeOthers    
+     storeOthers,
+     createMainStore,
+     getMainStore
     }

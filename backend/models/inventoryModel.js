@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const User = require("./userModel");
 const Product = require("./productModel");
 const StoreList = require("./storeList");
+const MainStore = require("./mainStore")
 
 
 const tinValidator = {
@@ -16,10 +17,11 @@ const tinValidator = {
 const inventorySchema = mongoose.Schema({
     type: {
         type: String,
-        enum: ['pp', 'pd', 'ps'],
+        enum: ['pp', 'pd', 'fpu'],
         // pp-product purchase 
         //pd-product distribute/ delivery 
         //ps-product sale
+        //fpu - fixed products utilized
         required: [true, "Trasnaction type is required"],        
     },
     
@@ -27,6 +29,11 @@ const inventorySchema = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: [true, "Product is required"],
         ref: Product
+    },
+    to_mainstore: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: [true, "Store is required"],
+        ref: MainStore
     },
     quatity: {
         type: Number,

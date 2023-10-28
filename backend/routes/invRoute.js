@@ -1,17 +1,28 @@
 const express = require("express");
 const protect = require("../middleware/authMiddleware");
-const { purchase, delivery, sale, getAllPurchase, getTinPurchase, getAllDelivery, getStoreDelivery, getAllSales, getProductBalance } = require("../controllers/invController");
+const { purchase, delivery,  getAllPurchase, getAllDelivery, getStoreDelivery} = require("../controllers/invController");
+const { sale, getAllSales, serviceSale, getServiceSale, useProducts, getUseProducts } = require("../controllers/saleController.js");
 const find_price = require("../middleware/priceMiddleware");
+const adjust_measurment = require("../middleware/measurmentMiddleware");
 const router = express.Router();
 
 router.post("/purchase", protect, purchase)
 router.get("/purchase", protect, getAllPurchase)
-router.get("/purchase_tin", protect, getTinPurchase)
+// Delivery //
 router.post("/delivery", protect, delivery)
 router.get("/delivery", protect, getAllDelivery)
 router.get("/delivery/:id", protect, getStoreDelivery)
-router.post("/sale", protect,find_price, sale)
+//Sale //
+router.post("/sale", protect,adjust_measurment,find_price, sale)
 router.get("/sale", protect, getAllSales)
-router.get("/sale/balance", protect, getProductBalance)
+// router.get("/sale/balance", protect, getProductBalance)
+
+// Service sale
+router.post("/sale/service", protect, serviceSale)
+router.get("/sale/service", protect, getServiceSale)
+
+// Use product
+router.post("/use", protect, useProducts)
+router.get("/use", protect, getUseProducts)
 
 module.exports = router

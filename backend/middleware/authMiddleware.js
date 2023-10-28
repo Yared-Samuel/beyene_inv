@@ -18,6 +18,7 @@ const protect = asyncHandler(async (req, res, next) => {
             throw new Error("User fot found")
         }
         req.user = user
+        
         next()
     } catch (error) {
         res.status(401)

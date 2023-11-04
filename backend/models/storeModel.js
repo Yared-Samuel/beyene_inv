@@ -3,6 +3,7 @@ const StoreList = require("./storeList");
 const Product = require("./productModel");
 const User = require("./userModel");
 const Serve = require("./serveListModel");
+const MainStore = require("./mainStore");
 
 
 const storeSchema = mongoose.Schema({
@@ -44,6 +45,11 @@ const storeSchema = mongoose.Schema({
     to_store: { // for delivery only
         type: mongoose.Schema.Types.ObjectId,
         ref: StoreList,
+        default: null
+    },
+    to_mainstore: {  // For purchase and delivery
+        type: mongoose.Schema.Types.ObjectId,
+        ref: MainStore,
         default: null
     },
     measured_by: {

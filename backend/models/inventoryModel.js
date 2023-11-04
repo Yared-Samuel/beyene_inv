@@ -30,10 +30,10 @@ const inventorySchema = mongoose.Schema({
         required: [true, "Product is required"],
         ref: Product
     },
-    to_mainstore: {
+    to_mainstore: {  // For purchase and delivery
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, "Store is required"],
-        ref: MainStore
+        ref: MainStore,
+        default: null
     },
     quatity: {
         type: Number,
@@ -71,13 +71,6 @@ const inventorySchema = mongoose.Schema({
         required: true,
         ref: User
     },
-
-    
-    
-    
-    
-    
-
 },{
     timestamps: true
 })

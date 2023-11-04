@@ -12,10 +12,10 @@ const generateToken = (id) => {
 // Register new user
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, role } = req.body;
 
   // Validation
-  if (!name || !email || !password) {
+  if (!name || !email || !password || !role) {
     res.status(400);
     throw new Error("Fill in all required fieslds!");
   }
@@ -37,6 +37,7 @@ const registerUser = asyncHandler(async (req, res) => {
     name,
     email,
     password,
+    role
   });
 
   //  Generate Token by calling the genereateToken function
@@ -54,12 +55,13 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   if (user) {
-    const { _id, name, email } = user;
+    const { _id, name, email, role } = user;
     res.status(201).json({
       _id,
       name,
       email,
       token,
+      role
     });
   } else {
     res.status(400);
@@ -82,8 +84,11 @@ const registerUser = asyncHandler(async (req, res) => {
         const user = await User.findOne({email})
         if(!user) {
             res.status(400)
-            throw new Error("User not found, First Sign up!")
+            throw new Error("User not found, Please Sign up!")
         }
+
+        //Role
+        const role = user.role
 
         // User Exists, Check if password is correct
 
@@ -110,6 +115,7 @@ const registerUser = asyncHandler(async (req, res) => {
             _id,
             name,
             email,
+            role,
             token
             });
   } else {

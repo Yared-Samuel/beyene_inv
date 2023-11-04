@@ -162,67 +162,72 @@ const serviceSales = asyncHandler(async(req, res) => {
 
  // product balance
 const getStoreProductBalance = asyncHandler(async (req, res) => {
-  
   const stores = await Store.find({
     $or: [
       { type: "pd" },
       { type: "ps" },
       { type: "pu" },
     ]
-  }).populate("product", "name")
+  }).populate("product", "name measurment sub_measurment sub_measurment_value")
     .populate("to_store", "name");
-const remainingQuantities = {};
+  const remainingQuantities = {};
 
-// Process transactions to calculate remaining quantities
-stores.forEach((transaction) => {
-  const productName = transaction.product.name;
-  const storeName = transaction.to_store.name;
-  const type = transaction.type;
-  const quantity = transaction.quatity;
+  // Process transactions to calculate remaining quantities
+  stores.forEach((transaction) => {
+    const productName = transaction.product.name;
+    const measurment = transaction.product.measurment;
+    const sub_measurment = transaction.product.sub_measurment || "";
+    const sub_measurment_value = transaction.product.sub_measurment_value || 1;
+    const storeName = transaction.to_store.name;
+    const type = transaction.type;
+    const q = transaction.quatity;
+    const quantity = Math.floor(q / sub_measurment_value);
+    const sub_quantity = q % sub_measurment_value;
 
-  if (!(storeName in remainingQuantities)) {
-    remainingQuantities[storeName] = {};
+    if (!(storeName in remainingQuantities)) {
+      remainingQuantities[storeName] = {};
+    }
+
+    if (!(productName in remainingQuantities[storeName])) {
+      remainingQuantities[storeName][productName] = { quantity: 0, measurment: measurment , sub_measurment: sub_measurment ,sub_quantity: 0};
+    }
+
+    // Adjust remaining quantity based on transaction type
+    if (type === 'pd') {
+      remainingQuantities[storeName][productName].quantity += quantity;
+      remainingQuantities[storeName][productName].sub_quantity += sub_quantity;
+    } else if (type === 'ps' || type === 'pu') {
+      remainingQuantities[storeName][productName].quantity -= quantity;
+      remainingQuantities[storeName][productName].sub_quantity -= sub_quantity;
+    }
+  });
+
+  const resultArray = [];
+
+  // Create an array with store names and their product quantities
+  for (const storeName in remainingQuantities) {
+    const storeData = {
+      storeName: storeName,
+      data: [],
+    };
+
+    for (const productName in remainingQuantities[storeName]) {
+      const data = remainingQuantities[storeName][productName];
+      storeData.data.push({
+        productName: productName,
+        quantity: data.quantity,
+        measurmentValue: data.measurment,
+        sub_quantity : data.sub_quantity,
+        sub_measurment: data.sub_measurment
+      });
+    }
+
+    resultArray.push(storeData);
   }
 
-  if (!(productName in remainingQuantities[storeName])) {
-    remainingQuantities[storeName][productName] = 0;
-  }
-
-  // Adjust remaining quantity based on transaction type
-  if (type === 'pd') {
-    remainingQuantities[storeName][productName] += quantity;
-  } else if (type === 'ps') {
-    remainingQuantities[storeName][productName] -= quantity;
-  }
-   else if (type === 'pu') {
-    remainingQuantities[storeName][productName] -= quantity;
-  }
+  res.status(201).json(resultArray);
 });
 
-const resultArray = [];
-
-// Create an array with store names and their product quantities
-for (const storeName in remainingQuantities) {
-  const storeData = {
-    storeName: storeName,
-    data: [],
-  };
-
-  for (const productName in remainingQuantities[storeName]) {
-    const quantity = remainingQuantities[storeName][productName];
-    storeData.data.push({
-      productName: productName,
-      quantity: quantity,
-    });
-  }
-
-  resultArray.push(storeData);
-}
-
-res.status(201).json(resultArray);
-
-
-});
 
  // product balance
  const getMainStoreBalance = asyncHandler(async (req, res) => {
@@ -232,15 +237,18 @@ res.status(201).json(resultArray);
       { type: "pd" },
       { type: "fpu" },
     ]
-  }).populate("product", "name");
+  }).populate("product", "name measurment sub_measurment sub_measurment_value");
 
   const remainingQuantities = {};
-
   // Process transactions to calculate remaining quantities
   inv.forEach((transaction) => {
     const productName = transaction.product.name;
+    const measurment = transaction.product.measurment;
+    const sub_measurment = transaction.product.sub_measurment;
+    const sub_measurment_value = transaction.product.sub_measurment_value || 1;
     const type = transaction.type;
     const quantity = transaction.quatity;
+    const main_quantity = quantity / sub_measurment_value
 
     if (!(productName in remainingQuantities)) {
       remainingQuantities[productName] = 0;
@@ -250,7 +258,7 @@ res.status(201).json(resultArray);
     if (type === 'pp') {
       remainingQuantities[productName] += quantity;
     } else if (type === 'pd' || type === 'fpu') {
-      remainingQuantities[productName] -= quantity;
+      remainingQuantities[productName] -= main_quantity;         
     }
   });
 

@@ -6,7 +6,7 @@ const Store = require("../models/storeModel");
 
 const purchase = asyncHandler(async (req, res) => {
   const { product, quatity, unit_price, tin,to_mainstore, date } = req.body;
-
+  console.log(req.body)
   const type = "pp";
   const user = req.user.id;
 
@@ -50,18 +50,19 @@ const delivery = asyncHandler(async (req, res) => {
   const deliveryResults = [];
 
   for (const delivery of deliveries) {
-    const { product, quatity, to_store, tin, date } = delivery;
+    const { product, quatity, to_store, tin, date, to_mainstore } = delivery;
+    
     const date_now = new Date();
-    if (!type || !product || !quatity || !date || !user || !to_store) {
+    if (!type || !product || !quatity || !date || !user || !to_store || !to_mainstore) {
       res.status(400);
       throw new Error("Some fields are mandatory");
     }
-
     const purchasedQuantity = [
       {
         $match: {
           type: "pp",
           product: new mongoose.Types.ObjectId(product),
+          to_mainstore: new mongoose.Types.ObjectId(to_mainstore),
         },
       },
       {
@@ -77,6 +78,7 @@ const delivery = asyncHandler(async (req, res) => {
         $match: {
           type: "pd",
           product: new mongoose.Types.ObjectId(product),
+          to_mainstore: new mongoose.Types.ObjectId(to_mainstore),
         },
       },
       {
@@ -91,7 +93,21 @@ const delivery = asyncHandler(async (req, res) => {
     const totalPurchased = (await Inventory.aggregate(purchasedQuantity)) || 0;
     const totaldelivered = (await Inventory.aggregate(deliveredQuantity)) || 0;
 
+    
+
     if (totalPurchased.length > 0) {
+        // quantity adjustment to submeasurment
+    const measurment_val = await Product.findById(product)
+    const measurment = measurment_val.sub_measurment_value
+    
+    
+    let quantity
+    if(measurment){
+      quantity = quatity * measurment
+    }else{
+      quantity = quatity
+    }
+  
       if (totaldelivered[0] === undefined) {
         const delivered = 0;
         const purchased = totalPurchased[0].currentBalance;
@@ -102,18 +118,20 @@ const delivery = asyncHandler(async (req, res) => {
           const deliver = await Inventory.create({
             type,
             product,
-            quatity,
+            quatity: quantity,
             date: date || date_now,
             to_store,
+            to_mainstore,
             tin,
             user,
           });
           const deliver_store = await Store.create({
             type,
             product,
-            quatity,
+            quatity: quantity,
             date: date || date_now,
             to_store,
+            to_mainstore,
             tin,
             user,
           });
@@ -134,18 +152,20 @@ const delivery = asyncHandler(async (req, res) => {
           const deliver = await Inventory.create({
             type,
             product,
-            quatity,
+            quatity : quantity,
             date: date || date_now,
             to_store,
+            to_mainstore,
             tin,
             user,
           });
           const deliver_store = await Store.create({
             type,
             product,
-            quatity,
+            quatity : quantity,
             date: date || date_now,
             to_store,
+            to_mainstore,
             tin,
             user,
           });
@@ -159,7 +179,8 @@ const delivery = asyncHandler(async (req, res) => {
       }
    
     } else {
-      res.status(404).json({ message: "This item is not purchased" });
+      res.status(400);
+          throw new Error("This item is not purchased");
     }
   }
 
@@ -167,12 +188,12 @@ const delivery = asyncHandler(async (req, res) => {
   res.status(201).json(deliveryResults);
 });
 
-// Get all Delivery
 
 const getAllDelivery = asyncHandler(async (req, res) => {
   const allDelivery = await Store.find({ type: "pd" })
     .populate("to_store", "name")
-    .populate("product", "name");
+    .populate("to_mainstore", "name")
+    .populate("product", "name measurment sub_measurment sub_measurment_value")
   res.status(201).json(allDelivery);
 });
 // Get Delivery for Specific store

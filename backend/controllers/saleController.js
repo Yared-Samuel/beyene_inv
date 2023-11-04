@@ -18,7 +18,7 @@ const sale = asyncHandler(async (req, res) => {
     const value = req.value
     const measurment_unit = req.measured_by
     
-    if (!type || !product_price || !to_store) {
+    if (!type || !product_price || !to_store || !product_id) {
       res.status(400);
       throw new Error("Some fields are mandatory");
     }
@@ -57,7 +57,6 @@ const sale = asyncHandler(async (req, res) => {
     const totalDelivered = (await Store.aggregate(deliveredQuantity)) || 0;
     const totalsoled = (await Store.aggregate(soledQuantity)) || 0;
   
-        console.log({totalDelivered, totalsoled})
   
     if (totalDelivered.length > 0) {
       if (totalsoled.length > 0) {

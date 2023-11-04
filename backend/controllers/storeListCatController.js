@@ -139,7 +139,7 @@ const createMainStore = asyncHandler(async(req, res)=>{
         user : user_creater
     });
     
-    res.status(201).json(stores)
+    res.status(201).send(stores)
 
 })
 
@@ -147,7 +147,7 @@ const getMainStore = asyncHandler(async(req, res) =>{
     const mainStoreList = await MainStore.find()
                             
                             
-    res.status(200).json(mainStoreList)
+    res.status(200).send(mainStoreList)
 })
 
 

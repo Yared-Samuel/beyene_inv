@@ -54,7 +54,7 @@ const storeSchema = mongoose.Schema({
     },
     measured_by: {
         type: String,
-        // ref: Product
+        default: false
     },
     date: {
         type: Date,

@@ -5,13 +5,7 @@ const StoreList = require("./storeList");
 const MainStore = require("./mainStore")
 
 
-const tinValidator = {
-    validator: function(value) {
-      // Check if the TIN is a string with exactly 10 digits
-      return /^[0-9]{10}$/.test(value);
-    },
-    message: 'Invalid TIN format. TIN must be a 10-digit number.',
-  };
+
 
 
 const inventorySchema = mongoose.Schema({

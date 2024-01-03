@@ -39,27 +39,14 @@ const find_price = asyncHandler(async (req, res, next) => {
     const product_in_price = filterProducts[0].product
     // console.log(sellingPrice)
     // console.log(product_in_price)
-    
-
-    
-    
-
-
         req.product_id = product_in_price
         req.product_selling_price = sellingPrice
         req.to_store = to_store
-    
-
-    
     next()
 } catch (error) {
     res.status(401)
     throw new Error("Cannot configure selling price")
 }
-
-    
-
-
 })
 
 module.exports= find_price

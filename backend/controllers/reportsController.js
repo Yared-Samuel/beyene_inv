@@ -171,7 +171,7 @@ const getStoreProductBalance = asyncHandler(async (req, res) => {
   }).populate("product", "name measurment sub_measurment sub_measurment_value")
     .populate("to_store", "name");
   const remainingQuantities = {};
-
+  console.log(stores)
   // Process transactions to calculate remaining quantities
   stores.forEach((transaction) => {
     const productName = transaction.product.name;
@@ -182,22 +182,25 @@ const getStoreProductBalance = asyncHandler(async (req, res) => {
     const type = transaction.type;
     const q = transaction.quatity;
     const quantity = Math.floor(q / sub_measurment_value);
+    console.log(quantity)
+    // const quantity = q
     const sub_quantity = q % sub_measurment_value;
-
+    // const sub_quantity = q;
+    console.log(sub_quantity)
     if (!(storeName in remainingQuantities)) {
       remainingQuantities[storeName] = {};
     }
 
     if (!(productName in remainingQuantities[storeName])) {
-      remainingQuantities[storeName][productName] = { quantity: 0, measurment: measurment , sub_measurment: sub_measurment ,sub_quantity: 0};
+      remainingQuantities[storeName][productName] = { quantity: 0, measurment: measurment , sub_measurment: sub_measurment ,sub_measurment_value: sub_measurment_value,sub_quantity: 0};
     }
 
     // Adjust remaining quantity based on transaction type
     if (type === 'pd') {
-      remainingQuantities[storeName][productName].quantity += quantity;
+      remainingQuantities[storeName][productName].quantity += q;
       remainingQuantities[storeName][productName].sub_quantity += sub_quantity;
     } else if (type === 'ps' || type === 'pu') {
-      remainingQuantities[storeName][productName].quantity -= quantity;
+      remainingQuantities[storeName][productName].quantity -= q;
       remainingQuantities[storeName][productName].sub_quantity -= sub_quantity;
     }
   });
@@ -213,17 +216,23 @@ const getStoreProductBalance = asyncHandler(async (req, res) => {
 
     for (const productName in remainingQuantities[storeName]) {
       const data = remainingQuantities[storeName][productName];
+      const mainQuantityFull = data.quantity / data.sub_measurment_value
+      const mainQuantity = parseInt(mainQuantityFull)
+      const subQuantity = data.quantity % data.sub_measurment_value
+      console.log(data.sub_measurment_value)
       storeData.data.push({
         productName: productName,
-        quantity: data.quantity,
+        quantity: mainQuantity,
         measurmentValue: data.measurment,
-        sub_quantity : data.sub_quantity,
+        sub_quantity : subQuantity,
         sub_measurment: data.sub_measurment
       });
     }
 
     resultArray.push(storeData);
   }
+
+
 
   res.status(201).json(resultArray);
 });
@@ -237,43 +246,62 @@ const getStoreProductBalance = asyncHandler(async (req, res) => {
       { type: "pd" },
       { type: "fpu" },
     ]
-  }).populate("product", "name measurment sub_measurment sub_measurment_value");
+  })
+  .populate("product", "name measurment")
+  .populate("to_mainstore", "name")
+  .populate("to_store", "name");
 
   const remainingQuantities = {};
   // Process transactions to calculate remaining quantities
   inv.forEach((transaction) => {
-    const productName = transaction.product.name;
-    const measurment = transaction.product.measurment;
-    const sub_measurment = transaction.product.sub_measurment;
-    const sub_measurment_value = transaction.product.sub_measurment_value || 1;
+    const productName = transaction.product.name;   
     const type = transaction.type;
     const quantity = transaction.quatity;
-    const main_quantity = quantity / sub_measurment_value
-
-    if (!(productName in remainingQuantities)) {
-      remainingQuantities[productName] = 0;
+    const storeName = transaction.to_mainstore.name
+    const measurment = transaction.product.measurment
+    if(!(storeName in remainingQuantities)){
+      remainingQuantities[storeName] = {}
     }
-
+    
+    if (!(productName in remainingQuantities[storeName])) {
+      remainingQuantities[storeName][productName] = {quantity: 0, measurment: measurment};
+      
+    }
+    
     // Adjust remaining quantity based on transaction type
     if (type === 'pp') {
-      remainingQuantities[productName] += quantity;
+      remainingQuantities[storeName][productName].quantity += quantity;
     } else if (type === 'pd' || type === 'fpu') {
-      remainingQuantities[productName] -= main_quantity;         
+      remainingQuantities[storeName][productName].quantity -= quantity;         
     }
+
   });
 
   const resultArray = [];
 
   // Create an array with store names and their product quantities
-  for (const productName in remainingQuantities) {
-    const invData = {
-      productName: productName,
-      quantity: remainingQuantities[productName],
+  for (const storeName in remainingQuantities) {
+    const storeData = {
+      storeName: storeName,
+      data: [],
+      
     };
 
-    resultArray.push(invData);
-  }
+    for (const productName in remainingQuantities[storeName]) {
+      const data= remainingQuantities[storeName][productName];
+      const finalProductName = data.productName
+      const finalQuantity = data.quantity
+      const finalMeasurment = data.measurment
+      storeData.data.push({
+        productName: productName,
+        quantity: finalQuantity,
+        measurment: finalMeasurment
+      })
+    }
 
+    resultArray.push(storeData);
+  }
+  console.log(resultArray)
   res.status(201).json(resultArray);
 });
 

@@ -2,6 +2,7 @@ const asyncHandler = require('express-async-handler')
 const StoreCat = require('../models/storeListCatModel');
 const StoreList = require('../models/storeList');
 const MainStore = require('../models/mainStore')
+
 const createStoreCategory = asyncHandler(async(req, res)=>{
     const {name , description} = req.body;
     const user_creater = req.user.id;
@@ -35,7 +36,6 @@ const getStoreCategory = asyncHandler(async(req, res) =>{
 
 const createStore = asyncHandler(async(req, res)=>{
     const {name, operator, description, sPrice , processing} = req.body;
-    console.log(req.body)
     const user_creater = req.user.id;
     if(!name ||  !processing || !sPrice) {
         res.status(400)
@@ -66,7 +66,7 @@ const createStore = asyncHandler(async(req, res)=>{
 })
 
 const getStores = asyncHandler(async(req, res) =>{
-    const storeLists = await StoreList.find({})
+    const storeLists = await StoreList.find()
                             .populate('sPrice', 'name',)
     
                             

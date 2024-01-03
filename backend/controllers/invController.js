@@ -6,17 +6,17 @@ const Store = require("../models/storeModel");
 
 const purchase = asyncHandler(async (req, res) => {
   const { product, quatity, unit_price, tin,to_mainstore, date } = req.body;
-  console.log(req.body)
   const type = "pp";
   const user = req.user.id;
-
+ console.log(req.body)
+  console.log({unit_price, quatity})
   if (!type || !product || !quatity || !date || !user || !unit_price || !to_mainstore) {
     res.status(400);
     throw new Error("Some fields are mandatory!");
   }
 
-  total_price = unit_price * quatity;
-
+  const total_price = unit_price * quatity;
+  
   const createPurchase = await Inventory.create({
     type,
     product,
@@ -28,6 +28,7 @@ const purchase = asyncHandler(async (req, res) => {
     date,
     user,
   });
+  console.log(createPurchase)
   res.status(201).json(createPurchase);
 });
 // Get all purchase
@@ -41,161 +42,10 @@ const getAllPurchase = asyncHandler(async (req, res) => {
 
 // Create Delivery
 
-const delivery = asyncHandler(async (req, res) => {
-  const deliveries = req.body; // An array of delivery objects
-
-  const type = "pd";
-  const user = req.user.id;
-
-  const deliveryResults = [];
-
-  for (const delivery of deliveries) {
-    const { product, quatity, to_store, tin, date, to_mainstore } = delivery;
-    
-    const date_now = new Date();
-    if (!type || !product || !quatity || !date || !user || !to_store || !to_mainstore) {
-      res.status(400);
-      throw new Error("Some fields are mandatory");
-    }
-    const purchasedQuantity = [
-      {
-        $match: {
-          type: "pp",
-          product: new mongoose.Types.ObjectId(product),
-          to_mainstore: new mongoose.Types.ObjectId(to_mainstore),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          currentBalance: { $sum: "$quatity" },
-        },
-      },
-    ];
-
-    const deliveredQuantity = [
-      {
-        $match: {
-          type: "pd",
-          product: new mongoose.Types.ObjectId(product),
-          to_mainstore: new mongoose.Types.ObjectId(to_mainstore),
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          deliverysum: { $sum: "$quatity" },
-        },
-      },
-    ];
-
-    // Checking if the product total purchse
-    const totalPurchased = (await Inventory.aggregate(purchasedQuantity)) || 0;
-    const totaldelivered = (await Inventory.aggregate(deliveredQuantity)) || 0;
-
-    
-
-    if (totalPurchased.length > 0) {
-        // quantity adjustment to submeasurment
-    const measurment_val = await Product.findById(product)
-    const measurment = measurment_val.sub_measurment_value
-    
-    
-    let quantity
-    if(measurment){
-      quantity = quatity * measurment
-    }else{
-      quantity = quatity
-    }
-  
-      if (totaldelivered[0] === undefined) {
-        const delivered = 0;
-        const purchased = totalPurchased[0].currentBalance;
-
-        const availableQuantty = purchased - delivered;
-        // Check if there is available balance
-        if (availableQuantty >= quatity) {
-          const deliver = await Inventory.create({
-            type,
-            product,
-            quatity: quantity,
-            date: date || date_now,
-            to_store,
-            to_mainstore,
-            tin,
-            user,
-          });
-          const deliver_store = await Store.create({
-            type,
-            product,
-            quatity: quantity,
-            date: date || date_now,
-            to_store,
-            to_mainstore,
-            tin,
-            user,
-          });
-          if (deliver && deliver_store) {
-            deliveryResults.push({ deliver, deliver_store });
-          }
-        } else {
-          res.status(400);
-          throw new Error("Please check your balance");
-        }
-      } else {
-        const delivered = totaldelivered[0].deliverysum;
-        const purchased = totalPurchased[0].currentBalance;
-
-        const availableQuantty = purchased - delivered;
-        // Check if there is available balance
-        if (availableQuantty >= quatity) {
-          const deliver = await Inventory.create({
-            type,
-            product,
-            quatity : quantity,
-            date: date || date_now,
-            to_store,
-            to_mainstore,
-            tin,
-            user,
-          });
-          const deliver_store = await Store.create({
-            type,
-            product,
-            quatity : quantity,
-            date: date || date_now,
-            to_store,
-            to_mainstore,
-            tin,
-            user,
-          });
-          if (deliver && deliver_store) {
-            deliveryResults.push({ deliver, deliver_store });
-          }
-        } else {
-          res.status(400);
-          throw new Error("Please check your balance");
-        }
-      }
-   
-    } else {
-      res.status(400);
-          throw new Error("This item is not purchased");
-    }
-  }
-
-  // Send back the results for all deliveries
-  res.status(201).json(deliveryResults);
-});
 
 
-const getAllDelivery = asyncHandler(async (req, res) => {
-  const allDelivery = await Store.find({ type: "pd" })
-    .populate("to_store", "name")
-    .populate("to_mainstore", "name")
-    .populate("product", "name measurment sub_measurment sub_measurment_value")
-  res.status(201).json(allDelivery);
-});
+
+
 // Get Delivery for Specific store
 const getStoreDelivery = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -212,8 +62,6 @@ const getStoreDelivery = asyncHandler(async (req, res) => {
 
 module.exports = {
   purchase,
-  delivery,  
   getAllPurchase,
-  getAllDelivery,
   getStoreDelivery,
   };

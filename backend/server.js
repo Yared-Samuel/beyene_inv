@@ -14,8 +14,9 @@ const priceRoute = require("./routes/priceRoute")
 const serveRoute = require("./routes/serveListRoute")
 const reportRoute = require("./routes/reportRoute");
 const analyzeRoute = require("./routes/analyzeRoute")
-
+const morgan = require('morgan');
 const app = express();
+
 
 // Middlewares
 
@@ -24,10 +25,10 @@ app.use(cookieParser())
 app.use(express.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(cors({
-  origin: ["http://localhost:3000","http://192.168.50.167:8081" ,"https://inv-app-beyene"],
+  origin: ["http://localhost:3000","http://192.168.1.167:8081" ,"https://inv-app-beyene"],
   credentials: true
 }));
-
+app.use(morgan('combined'))
 // Route Middleware
 
 app.use("/api/users", userRoute);
@@ -49,7 +50,7 @@ app.get("/", (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-
+const HOST = '0.0.0.0'
 // Connect to DB and start server
 
 mongoose
@@ -58,7 +59,7 @@ mongoose
     useUnifiedTopology: true,
   })
   .then(() => {
-    app.listen(PORT, () => {
+    app.listen(PORT, HOST,() => {
       console.log(`Server runnning on port ${PORT}`);
     });
   })
